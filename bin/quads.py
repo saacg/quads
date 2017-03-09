@@ -6,6 +6,9 @@ import logging
 import os
 import sys
 import yaml
+import requests
+from subprocess import call
+from subprocess import check_call
 
 logger = logging.getLogger('quads')
 ch = logging.StreamHandler(sys.stdout)
@@ -178,6 +181,10 @@ def main(argv):
     parser.add_argument('--os-control-scale', dest='controlscale',type=int,default=None, help='Number of controller nodes for OpenStack deployment')
     parser.add_argument('--os-compute-scale', dest='computescale',type=int,default=None, help='Number of compute nodes for OpenStack deployment')
     parser.add_argument('--host-type', dest='hosttype',type=str, default=None, help='Model/Make/Type of host DellR620  for example')
+
+    parser.add_argument('--hil-api-action', dest='hilapiaction', type=str, default=None, help='HIL API Action');
+    parser.add_argument('--hil-api-call', dest='hilapicall', type=str, default=None, help='HIL API Call');
+
 
     args = parser.parse_args()
     if args.logpath :

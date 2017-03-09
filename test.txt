@@ -1,0 +1,10 @@
+<<<<<<< HEAD
+<<<<<<< HEAD
+this is Vladimir
+=======
+this is me practicing and learning conflicts in github
+Lord DarkSeeker
+>>>>>>> 1dca674... Learning...
+=======
+hello this is isaac's change to test.txt
+>>>>>>> c2a505b... added line to test.txt
