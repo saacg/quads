@@ -819,3 +819,9 @@ class Quads(object):
                             cloud_summary[cloud]['post_config'] = service_list
                 result.append(cloud_summary)
         return result
+                print current_cloud
+
+    # add for EC528 HIL-QUADS integration project
+    def quads_rest_call(self, method, url, request, hil_data=None):
+        r = requests.request(method, url + request, data=hil_data)
+        print r.text

@@ -117,6 +117,7 @@ def main(argv):
     quads_config_file = os.path.dirname(__file__) + "/../conf/quads.yml"
     quads_config = quads_load_config(quads_config_file)
 
+
     if "data_dir" not in quads_config:
         print "quads: Missing \"data_dir\" in " + quads_config_file
         exit(1)
@@ -132,6 +133,10 @@ def main(argv):
     defaultconfig = quads_config["data_dir"] + "/schedule.yaml"
     defaultstatedir = quads_config["data_dir"] + "/state"
     defaultmovecommand = "/bin/echo"
+
+
+    # added for EC528 HIL-QUADS integration project - not a good place for this variable - should be moved eventually
+    hil_url = 'http://127.0.0.1:5000'
 
     parser = argparse.ArgumentParser(description='Query current cloud for a given host')
     group = parser.add_mutually_exclusive_group()
@@ -257,6 +262,8 @@ def main(argv):
 
     if args.lsclouds:
         print_clouds(quads)
+        quads.quads_list_clouds()
+        quads.quads_rest_call('GET', hil_url, '/projects')
         exit(0)
 
     if args.lsowner:
@@ -310,6 +317,9 @@ def main(argv):
             for r in result:
                 logger.error(r)
             exit(1)
+        quads.quads_rest_call('PUT', hil_url, '/project/' + args.cloudresource)
+        quads.quads_rest_call('GET', hil_url, '/projects')
+        quads.quads_update_cloud(args.cloudresource, args.description, args.force, args.cloudowner, args.ccusers, args.cloudticket, args.qinq)
         exit(0)
 
     if args.schedquery:
@@ -396,6 +406,28 @@ def main(argv):
         exit(0)
     if args.postconfig:
         print_cloud_postconfig(quads, args.datearg, args.summary, args.postconfig)
+    #added for EC528 HIL-QUADS Demo
+    #hardcoded to work on localhost port 5000, but can be reconfigured to work on another server
+    if args.hilapiaction is not None and args.hilapicall is not None:
+        quads.quads_rest_call(args.hilapiaction, hil_url, args.hilapicall)
+        '''
+        if args.hilapiaction == "GET":
+            r = requests.get(hil_url + args.hilapicall)
+            print r.text
+
+        if args.hilapiaction == 'POST':
+            #r = requests.post()
+            print "got a POST request!"
+
+        if args.hilapiaction == 'PUT':
+            r = requests.put(hil_url + args.hilapicall)
+            print r.text
+
+        if args.hilapiaction == 'DELETE':
+            #r = requests.delete()
+            print "got a DELETE request!"
+        '''
+
         exit(0)
 
     print_cloud_hosts(quads, args.datearg, args.cloudonly)
