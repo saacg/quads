@@ -23,8 +23,14 @@ import os
 import subprocess
 import sys
 import yaml
-
 import QuadsData
+import requests
+from subprocess import call
+from subprocess import check_call
+from Clouds import Clouds
+from History import History
+from QuadsData import QuadsData
+from CloudHistory import CloudHistory
 
 class Quads(object):
     def __init__(self, config, statedir, movecommand, datearg, syncstate, initialize, force):
