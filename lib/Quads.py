@@ -29,6 +29,67 @@ from hardware_services.inventory_service import get_inventory_service, set_inven
 from hardware_services.network_service import get_network_service, set_network_service
 sys.path.append(os.path.dirname(__file__) + "/hardware_services/inventory_drivers/")
 sys.path.append(os.path.dirname(__file__) + "/hardware_services/network_drivers/")
+from subprocess import call
+from subprocess import check_call
+
+class Hosts(object):
+    def __init__(self, data):
+        """
+        Initialize a Hosts object. This is a subset of
+        data required by the Quads object.
+        """
+        if 'hosts' not in data:
+            print "data missing required \"hosts\" section."
+            exit(1)
+
+        self.data = data["hosts"]
+
+    # list the hosts
+    def host_list(self):
+        # list just the hostnames
+        for h in sorted(self.data.iterkeys()):
+            print h
+
+class Clouds(object):
+    def __init__(self, data):
+        """
+        Initialize a Clouds object. This is a subset of
+        data required by the Quads object.
+        """
+        if 'clouds' not in data:
+            print "data missing required \"clouds\" section."
+            exit(1)
+
+        self.data = data["clouds"]
+
+   # list the clouds
+    def cloud_list(self):
+        # list just the clouds
+        for c in sorted(self.data.iterkeys()):
+            print c
+
+class History(object):
+    def __init__(self, data):
+        """
+        Initialize a History object. This is a subset of
+        data required by the Quads object. (used for host
+        history tracking)
+        """
+        if 'history' not in data:
+            self.data = {}
+        else:
+            self.data = data["history"]
+
+class QuadsData(object):
+    def __init__(self, data):
+        """
+        Initialize the QuadsData object.
+        """
+
+        self.hosts = Hosts(data)
+        self.clouds = Clouds(data)
+        self.history = History(data)
+>>>>>>> transferred rest calls from quads.py into libquads.py as quads member function:lib/libquads.py
 
 
 class Quads(object):
@@ -600,6 +661,7 @@ class Quads(object):
                             ",cloud=" + self.quads.hosts.data[host]["schedule"][override]["cloud"]
             else:
                 print current_cloud
+
 
     # add for EC528 HIL-QUADS integration project
     def quads_rest_call(self, method, url, request, json_data=None):
