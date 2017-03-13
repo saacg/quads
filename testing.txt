@@ -1,5 +1,9 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 skeep bop bee do
 =======
 a little bit of nonsense now and then is relished by the wisest men
 >>>>>>> 0cb4bae... committing testing.txt for git workflow demo
+=======
+Supercalifragilisticexpialidocious
+>>>>>>> a0b1d19... added testing.txt for git workflow
