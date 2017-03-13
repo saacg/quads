@@ -6,6 +6,7 @@ import logging
 import os
 import sys
 import yaml
+import json
 import requests
 from subprocess import call
 from subprocess import check_call
@@ -317,8 +318,9 @@ def main(argv):
             for r in result:
                 logger.error(r)
             exit(1)
-        quads.quads_rest_call('PUT', hil_url, '/project/' + args.cloudresource)
-        quads.quads_rest_call('GET', hil_url, '/projects')
+        quads.quads_rest_call('PUT', hil_url, '/project/' + args.cloudresource)     #EC528 addition
+        quads.quads_rest_call('GET', hil_url, '/projects')      #EC528 addition
+        quads.quads_rest_call('PUT', hil_url, '/network/' + args.cloudresource, json.dumps({"owner": args.cloudresource, "access": args.cloudresource, "net_id": ""}))
         quads.quads_update_cloud(args.cloudresource, args.description, args.force, args.cloudowner, args.ccusers, args.cloudticket, args.qinq)
         exit(0)
 
