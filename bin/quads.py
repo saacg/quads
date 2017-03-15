@@ -319,11 +319,18 @@ def main(argv):
                 logger.error(r)
             exit(1)
 
+
+        print "Print statements added for demo"
+        print "creating project in HIL named " + args.cloudresource
         quads.quads_rest_call('PUT', hil_url, '/project/' + args.cloudresource)     #EC528 addition
+        print "listing all projects in HIL to show " +args.cloudresource+ " has been added"
         quads.quads_rest_call('GET', hil_url, '/projects')      #EC528 addition
+        print "adding network to HIL and attaching it to " + args.cloudresource
         quads.quads_rest_call('PUT', hil_url, '/network/' + args.cloudresource, json.dumps({"owner": args.cloudresource, "access": args.cloudresource, "net_id": ""}))  #EC528 addition
+        print "listing all networks in HIL to show " + args.cloudresource + " network has been added correctly"
         quads.quads_rest_call('GET', hil_url, '/networks')      #EC528 addition
 
+        print "adding " + args.cloudresource + " to quads data"
         exit(0)
 
     if args.schedquery:
