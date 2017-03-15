@@ -7,8 +7,9 @@ import yaml
 import argparse
 import os
 import sys
+import requests # EC528 addition
+import json     # EC528 addition
 import logging
-import requests
 from subprocess import call
 from subprocess import check_call
 from Quads import Quads
@@ -239,8 +240,9 @@ def main(argv):
         exit(0)
 
     if args.cloudresource:
-        quads.quads_rest_call('PUT', hil_url, '/project/' + args.cloudresource)
-        quads.quads_rest_call('GET', hil_url, '/projects')
+        quads.quads_rest_call('PUT', hil_url, '/project/' + args.cloudresource)     #EC528 addition
+        quads.quads_rest_call('GET', hil_url, '/projects')      #EC528 addition
+        quads.quads_rest_call('PUT', hil_url, '/network/' + args.cloudresource, json.dumps({"owner": args.cloudresource, "access": args.cloudresource, "net_id": ""}))
         quads.quads_update_cloud(args.cloudresource, args.description, args.force, args.cloudowner, args.ccusers, args.cloudticket, args.qinq)
         exit(0)
 
