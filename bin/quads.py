@@ -264,7 +264,7 @@ def main(argv):
     if args.lsclouds:
         print_clouds(quads)
         quads.quads_list_clouds()
-        quads.quads_rest_call('GET', hil_url, '/projects')
+        #quads.quads_rest_call('GET', hil_url, '/projects')
         exit(0)
 
     if args.lsowner:
@@ -286,6 +286,7 @@ def main(argv):
     if args.rmhost:
         print "Detaching HIL node " + args.rmhost + " from project " + args.hostcloud
         quads.quads_rest_call('POST', hil_url, '/project/' + args.hostcloud + '/detach_node', json.dumps({'node': args.rmhost}))     #EC528 addition)
+        print "removing QUADS host " + args.rmhost + " from " + args.hostcloud  + " in QUADS data"
         quads.quads_remove_host(args.rmhost)
         exit(0)
 
@@ -294,6 +295,7 @@ def main(argv):
         quads.quads_rest_call('DELETE', hil_url, '/network/' + args.rmcloud)     #EC528 addition
         print "Deleting project in HIL named " + args.rmcloud
         quads.quads_rest_call('DELETE', hil_url, '/project/' + args.rmcloud)     #EC528 addition
+        print "Deleting " + args.rmcloud + " from QUADS data"
         quads.quads_remove_cloud(args.rmcloud)
         exit(0)
 
@@ -308,6 +310,10 @@ def main(argv):
             for r in result:
                 logger.error(r)
             exit(1)
+        print "Print statements added for demo"
+        print "attaching HIL node " + args.hostresource + " to project " + args.hostcloud
+        quads.quads_rest_call('POST', hil_url, '/project/' + args.hostcloud + '/connect_node', json.dumps({'node': args.hostresource}))     #EC528 addition
+        print "defining QUADS host " + args.hostresource + " and adding it to " + args.hostcloud + " in QUADS data"
         exit(0)
 
     if args.cloudresource:
@@ -326,16 +332,10 @@ def main(argv):
             exit(1)
 
 
-        print "Print statements added for demo"
         print "creating project in HIL named " + args.cloudresource
         quads.quads_rest_call('PUT', hil_url, '/project/' + args.cloudresource)     #EC528 addition
-        print "listing all projects in HIL to show " +args.cloudresource+ " has been added"
-        quads.quads_rest_call('GET', hil_url, '/projects')      #EC528 addition
         print "adding network to HIL and attaching it to " + args.cloudresource
         quads.quads_rest_call('PUT', hil_url, '/network/' + args.cloudresource, json.dumps({"owner": args.cloudresource, "access": args.cloudresource, "net_id": ""}))  #EC528 addition
-        print "listing all networks in HIL to show " + args.cloudresource + " network has been added correctly"
-        quads.quads_rest_call('GET', hil_url, '/networks')      #EC528 addition
-
         print "adding " + args.cloudresource + " to quads data"
         exit(0)
 
