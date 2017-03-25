@@ -24,15 +24,20 @@ import subprocess
 import sys
 import yaml
 import QuadsData
+from datetime import datetime
+import os
 import requests
 from subprocess import call
-from subprocess import check_call
 from Clouds import Clouds
 from History import History
 from QuadsData import QuadsData
 from CloudHistory import CloudHistory
+from hardware_services.hardware_service import get_hardware_service, set_hardware_service
+from hardware_services.hardware_drivers.juniper_driver import JuniperDriver
+
 
 class Quads(object):
+
     def __init__(self, config, statedir, movecommand, datearg, syncstate, initialize, force):
         """
         Initialize a quads object.
@@ -43,6 +48,7 @@ class Quads(object):
         self.datearg = datearg
         self.logger = logging.getLogger("quads.Quads")
         self.logger.setLevel(logging.DEBUG)
+        set_hardware_service(JuniperDriver())
 
         self.init_data(initialize, force)
         self.read_data()
@@ -326,136 +332,44 @@ class Quads(object):
     # remove a host
     def remove_host(self, rmhost):
         # remove a specific host
-        if rmhost not in self.quads.hosts.data:
-            return [rmhost + " not found"]
-        del(self.quads.hosts.data[rmhost])
-        if self.write_data():
-            return ["OK"]
-        else:
-            return ["ERROR"]
+
+        kwargs = {'rmhost': rmhost}
+
+        get_hardware_service().remove_host(self, **kwargs)
+
+        return
 
     # remove a cloud
     def quads_remove_cloud(self, rmcloud):
         # remove a cloud (only if no hosts use it)
-        if rmcloud not in self.quads.clouds.data:
-            return [rmcloud + " not found"]
-        for h in self.quads.hosts.data:
-            if self.quads.hosts.data[h]["cloud"] == rmcloud:
-                return [rmcloud + " is default for " + h,
-                        "Change the default before deleting this cloud"]
-            for s in self.quads.hosts.data[h]["schedule"]:
-                if self.quads.hosts.data[h]["schedule"][s]["cloud"] == rmcloud:
-                    return [rmcloud + " is used in a schedule for " + h,
-                            "Delete schedule before deleting this cloud"]
-        del(self.quads.clouds.data[rmcloud])
-        if self.write_data():
-            return ["OK"]
-        else:
-            return ["ERROR"]
+
+        kwargs = {'rmcloud': rmcloud}
+
+        get_hardware_service().remove_cloud(self, **kwargs)
+
+        return
 
     # update a host resource
     def update_host(self, hostresource, hostcloud, hosttype, forceupdate):
         # define or update a host resouce
-        if hostcloud is None:
-            self.logger.error("--default-cloud is required when using --define-host")
-            return ["--default-cloud is required when using --define-host"]
-        elif hosttype is None:
-            self.logger.error("--host-type is required when using --define-host")
-            return ["--host-type is required when using --define-host"]
 
-        else:
-            if hostcloud not in self.quads.clouds.data:
-                return ["Unknown cloud : %s" % hostcloud,
-                        "Define it first using:  --define-cloud"]
-            if hostresource in self.quads.hosts.data and not forceupdate:
-                self.logger.error("Host \"%s\" already defined. Use --force to replace" % hostresource)
-                return ["Host \"%s\" already defined. Use --force to replace" % hostresource]
+        kwargs = {'hostresource': hostresource, 'hostcloud': hostcloud, 'forceupdate': forceupdate}
 
-            if hostresource in self.quads.hosts.data:
-                self.quads.hosts.data[hostresource] = { "cloud": hostcloud,
-                                                       "interfaces":
-                                                       self.quads.hosts.data[hostresource]["interfaces"],
-                                                       "schedule":
-                                                       self.quads.hosts.data[hostresource]["schedule"],
-                                                       "type": hosttype,
-                                                     }
-                self.quads.history.data[hostresource][int(time.time())] = hostcloud
-            else:
-                self.quads.hosts.data[hostresource] = { "cloud": hostcloud,
-                                                       "interfaces": {},
-                                                       "schedule": {},
-                                                       "type": hosttype}
-                self.quads.history.data[hostresource] = {}
-                self.quads.history.data[hostresource][0] = hostcloud
-            if self.write_data():
-                return ["OK"]
-            else:
-                return ["ERROR"]
+        get_hardware_service().update_host(self, **kwargs)
+
+        return
 
     # update a cloud resource
     def update_cloud(self, cloudresource, description, forceupdate, cloudowner,
                      ccusers, cloudticket, qinq, postconfig, version, puddle,
                      controlscale, computescale):
         # define or update a cloud resource
-        if description is None:
-            self.logger.error("--description is required when using --define-cloud")
-            return ["--description is required when using --define-cloud"]
-        else:
-            if cloudresource in self.quads.clouds.data and not forceupdate:
-                self.logger.error("Cloud \"%s\" already defined. Use --force to replace" % cloudresource)
-                return ["Cloud \"%s\" already defined. Use --force to replace" % cloudresource]
-            if not cloudowner:
-                cloudowner = "nobody"
-            if not cloudticket:
-                cloudticket = "00000"
-            if not qinq:
-                qinq = 0
-            if not ccusers:
-                ccusers = []
-            else:
-                ccusers = ccusers.split()
-            # Add post configuration parameters to the cloud definition
-            post_config = []
-            if postconfig is not None:
-                for service in postconfig:
-                    if service == 'openstack':
-                        if version is None or controlscale is None or computescale is None:
-                            self.logger.error("Missing required arguments for openstack deployment")
-                            return ["Missing OpenStack specific arguments"]
-                        else:
-                            service_description = {'name': 'openstack',
-                                                   'version': version,
-                                                   'puddle': puddle,
-                                                   'controllers': controlscale,
-                                                   'computes': computescale
-                                                  }
-                            post_config.append(service_description)
-                    else:
-                        #code for defining service description for other post
-                        #config options should come here, service_description is
-                        #defined here for the post config option
-                        pass
+        kwargs = {'cloudresource': cloudresource, 'description': description, 'forceupdate': forceupdate,
+                  'cloudowner': cloudowner, 'ccusers': ccusers, 'cloudticket': cloudticket, 'qinq': qinq}
 
-            if cloudresource not in self.quads.cloud_history.data:
-                self.quads.cloud_history.data[cloudresource] = {}
-            self.quads.cloud_history.data[cloudresource][int(time.time())] = {'ccusers':copy.deepcopy(ccusers),
-                                                                    'description':description,
-                                                                    'post_config':copy.deepcopy(post_config),
-                                                                    'owner':cloudowner,
-                                                                    'qinq':qinq,
-                                                                    'ticket':cloudticket}
-            self.quads.clouds.data[cloudresource] = { "description": description,
-                                                     "networks":{},
-                                                     "owner": cloudowner,
-                                                     "ccusers": ccusers,
-                                                     "ticket": cloudticket,
-                                                     "qinq": qinq,
-                                                     "post_config": post_config
-                                                    }
-            if self.write_data():
-                return ["OK"]
-            else:
-                return ["ERROR"]
+        get_hardware_service().update_cloud(self, **kwargs)
+
+        return
 
     # define a schedule for a given host
     def add_host_schedule(self, schedstart, schedend, schedcloud, host):
@@ -646,33 +560,12 @@ class Quads(object):
     # this method will be deprecated in favor of pending_moves
     def move_hosts(self, movecommand, dryrun, statedir, datearg):
         # move a host
-        if self.datearg is not None and not dryrun :
-            self.logger.error("--move-hosts and --date are mutually exclusive unless using --dry-run.")
-            exit(1)
-        for h in sorted(self.quads.hosts.data.iterkeys()):
-            default_cloud, current_cloud, current_override = self.find_current(h, datearg)
-            if not os.path.isfile(statedir + "/" + h):
-                try:
-                    stream = open(statedir + "/" + h, 'w')
-                    stream.write(current_cloud + '\n')
-                    stream.close()
-                except Exception, ex:
-                    self.logger.error("There was a problem with your file %s" % ex)
-            else:
-                stream = open(statedir + "/" + h, 'r')
-                current_state = stream.readline().rstrip()
-                stream.close()
-                if current_state != current_cloud:
-                    self.logger.info("Moving " + h + " from " + current_state + " to " + current_cloud)
-                    if not dryrun:
-                        try:
-                            subprocess.check_call([movecommand, h, current_state, current_cloud])
-                        except Exception, ex:
-                            self.logger.error("Move command failed: %s" % ex)
-                            exit(1)
-                        stream = open(statedir + "/" + h, 'w')
-                        stream.write(current_cloud + '\n')
-                        stream.close()
+
+        kwargs = {'movecommand': movecommand, 'dryrun': dryrun, 'statedir': statedir,
+                  'datearg': datearg}
+
+        get_hardware_service().move_hosts(self, **kwargs)
+
         exit(0)
 
     def pending_moves(self, statedir, datearg):
