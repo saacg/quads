@@ -104,6 +104,7 @@ class Quads(object):
         self.datearg = datearg
         self.logger = logging.getLogger("quads.Quads")
         self.logger.setLevel(logging.DEBUG)
+        set_hardware_service(JuniperDriver())
 
         #EC528 addition - dynamically import driver module and set inventory and network services
         inventoryservice = hardwareservice + "InventoryDriver"
