@@ -9,6 +9,7 @@ import os
 import sys
 import requests # EC528 addition
 import json     # EC528 addition
+import importlib #EC528 addition
 import logging
 from subprocess import call
 from subprocess import check_call
@@ -16,6 +17,7 @@ from Quads import Quads
 
 sys.path.append(os.path.dirname(__file__) + "/../")
 #from lib.hardware_services.hardware_service import set_hardware_service
+
 
 
 logger = logging.getLogger('quads')
