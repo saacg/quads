@@ -34,6 +34,7 @@ from QuadsData import QuadsData
 from CloudHistory import CloudHistory
 from hardware_services.hardware_service import get_hardware_service, set_hardware_service
 from hardware_services.hardware_drivers.juniper_driver import JuniperDriver
+from hardware_services.hardware_drivers.hil_driver import HilDriver #HIL Driver importing
 
 
 class Quads(object):
@@ -48,7 +49,9 @@ class Quads(object):
         self.datearg = datearg
         self.logger = logging.getLogger("quads.Quads")
         self.logger.setLevel(logging.DEBUG)
-        set_hardware_service(JuniperDriver())
+        #set_hardware_service(JuniperDriver())
+	set_hardware_service(HilDriver())  #HIL driver addition
+
 
         self.init_data(initialize, force)
         self.read_data()
