@@ -19,7 +19,7 @@ sys.path.append(os.path.dirname(__file__) + "/../")
 #from lib.hardware_services.hardware_service import set_hardware_service
 
 
-from lib.hardware_services.hardware_service
+from lib.hardware_services.hardware_service import set_hardware_service
 
 
 logger = logging.getLogger('quads')
@@ -58,6 +58,14 @@ def main(argv):
         print "quads: Missing \"install_dir\" in " + quads_config_file
         exit(1)
 
+
+    if "hardware_service" not in quads_config:
+        print "quads: Missing \"hardware_service\" in " + quads_config_file
+        exit(1)
+
+    sys.path.append(quads_config["install_dir"] + "/lib")
+    sys.path.append(os.path.dirname(__file__) + "/../lib")
+    import libquads
 
     if "hardware_service" not in quads_config:
         print "quads: Missing \"hardware_service\" in " + quads_config_file
