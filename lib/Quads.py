@@ -367,6 +367,7 @@ class Quads(object):
                      ccusers, cloudticket, qinq, postconfig, version, puddle,
                      controlscale, computescale):
         # define or update a cloud resource
+
         kwargs = {'cloudresource': cloudresource, 'description': description, 'forceupdate': forceupdate,
                   'cloudowner': cloudowner, 'ccusers': ccusers, 'cloudticket': cloudticket, 'qinq': qinq}
 
