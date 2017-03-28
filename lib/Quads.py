@@ -89,7 +89,6 @@ class QuadsData(object):
         self.hosts = Hosts(data)
         self.clouds = Clouds(data)
         self.history = History(data)
->>>>>>> transferred rest calls from quads.py into libquads.py as quads member function:lib/libquads.py
 
 
 class Quads(object):
