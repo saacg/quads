@@ -32,6 +32,7 @@ sys.path.append(os.path.dirname(__file__) + "/hardware_services/network_drivers/
 from subprocess import call
 from subprocess import check_call
 
+
 class Hosts(object):
     def __init__(self, data):
         """

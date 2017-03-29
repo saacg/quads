@@ -65,6 +65,7 @@ def main(argv):
 
     sys.path.append(quads_config["install_dir"] + "/lib")
     sys.path.append(os.path.dirname(__file__) + "/../lib")
+    sys.path.append(os.path.dirname(__file__) + "/../lib/hardware_services/hardware_drivers/")
     import libquads
 
     if "hardware_service" not in quads_config:
