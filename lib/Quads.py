@@ -51,6 +51,16 @@ class Quads(object):
         self.logger.setLevel(logging.DEBUG)
 
 
+        if initialize:
+            self.quads_init_data(force)
+        try:
+            stream = open(config, 'r')
+            self.data = yaml.load(stream)
+            stream.close()
+        except Exception, ex:
+            self.logger.error(ex)
+            exit(1)
+
         self.init_data(initialize, force)
         self.read_data()
         self.history_init()
