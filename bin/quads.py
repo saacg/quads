@@ -135,6 +135,8 @@ def main(argv):
     parser.add_argument('--hil-api-action', dest='hilapiaction', type=str, default=None, help='HIL API Action');
     parser.add_argument('--hil-api-call', dest='hilapicall', type=str, default=None, help='HIL API Call');
 
+    parser.add_argument('--set-hardware-service', dest='hardwareservice', type=str, default=defaulthardwareservice, help='Set Hardware Serve');
+
 
     args = parser.parse_args()
 
@@ -202,7 +204,8 @@ def main(argv):
     #
     #   hardwareservice - ????
     #
-    quads = Quads(args.config, args.statedir, args.movecommand, args.datearg,
+
+    quads = libquads.Quads(args.config, args.statedir, args.movecommand, args.datearg,
                   args.syncstate, args.initialize, args.force, args.hardwareservice)
 
     # should these be mutually exclusive?
