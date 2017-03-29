@@ -143,6 +143,12 @@ def main(argv):
     defaultstatedir = quads_config["data_dir"] + "/state"
     defaultmovecommand = "/bin/echo"
 
+    # EC528 addition - sets hardware service
+    defaulthardwareservice = quads_config["hardware_service"]
+
+    # added for EC528 HIL-QUADS integration project - not a good place for this variable - should be moved eventually
+    hil_url = 'http://127.0.0.1:5000'
+
     parser = argparse.ArgumentParser(description='Query current cloud for a given host')
     group = parser.add_mutually_exclusive_group()
     group.add_argument('--ls-owner', dest='lsowner', action='store_true', default=None, help='List owners')
@@ -191,6 +197,9 @@ def main(argv):
     parser.add_argument('--os-control-scale', dest='controlscale',type=int,default=None, help='Number of controller nodes for OpenStack deployment')
     parser.add_argument('--os-compute-scale', dest='computescale',type=int,default=None, help='Number of compute nodes for OpenStack deployment')
     parser.add_argument('--host-type', dest='hosttype',type=str, default=None, help='Model/Make/Type of host DellR620  for example')
+    parser.add_argument('--hil-api-action', dest='hilapiaction', type=str, default=None, help='HIL API Action');
+    parser.add_argument('--hil-api-call', dest='hilapicall', type=str, default=None, help='HIL API Call');
+    parser.add_argument('--set-hardware-service', dest='hardwareservice', type=str, default=defaulthardwareservice, help='Set Hardware Serve');
 
     args = parser.parse_args()
     if args.logpath :
@@ -254,9 +263,13 @@ def main(argv):
     #
     #   force -  Some operations require --force.  E.g. if you want to redefine
     #            a cloud environment.
+    #
+    #   hardwareservice - ????
+    #
 
     quads = Quads(args.config, args.statedir, args.movecommand, args.datearg,
                   args.syncstate, args.initialize, args.force)
+
     if args.lshosts:
         print_hosts(quads)
         exit(0)

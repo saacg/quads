@@ -39,7 +39,7 @@ from hardware_services.hardware_drivers.hil_driver import HilDriver #HIL Driver 
 
 class Quads(object):
 
-    def __init__(self, config, statedir, movecommand, datearg, syncstate, initialize, force):
+    def __init__(self, config, statedir, movecommand, datearg, syncstate, initialize, force, hardwareservice):
         """
         Initialize a quads object.
         """
@@ -49,8 +49,6 @@ class Quads(object):
         self.datearg = datearg
         self.logger = logging.getLogger("quads.Quads")
         self.logger.setLevel(logging.DEBUG)
-        #set_hardware_service(JuniperDriver())
-	set_hardware_service(HilDriver())  #HIL driver addition
 
 
         self.init_data(initialize, force)
