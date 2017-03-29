@@ -27,14 +27,15 @@ import QuadsData
 from datetime import datetime
 import os
 import requests
-from subprocess import call
+import sys
+import importlib
 from Clouds import Clouds
 from History import History
 from QuadsData import QuadsData
 from CloudHistory import CloudHistory
 from hardware_services.hardware_service import get_hardware_service, set_hardware_service
 from hardware_services.hardware_drivers.juniper_driver import JuniperDriver
-from hardware_services.hardware_drivers.hil_driver import HilDriver #HIL Driver importing
+from hardware_services.hardware_drivers.hil_driver import HilDriver
 
 
 class Quads(object):
@@ -50,6 +51,10 @@ class Quads(object):
         self.logger = logging.getLogger("quads.Quads")
         self.logger.setLevel(logging.DEBUG)
 
+        #EC528 addition - dynamically import driver module and set hardware service
+        importlib.import_module(hardwareservice)
+        set_hardware_service(getattr(sys.modules[hardwareservice], hardwareservice)())
+        self.hardware_service = get_hardware_service()
 
         if initialize:
             self.quads_init_data(force)
@@ -346,7 +351,7 @@ class Quads(object):
 
         kwargs = {'rmhost': rmhost}
 
-        get_hardware_service().remove_host(self, **kwargs)
+        self.hardware_service.remove_host(self, **kwargs)
 
         return
 
@@ -356,7 +361,7 @@ class Quads(object):
 
         kwargs = {'rmcloud': rmcloud}
 
-        get_hardware_service().remove_cloud(self, **kwargs)
+        self.hardware_service.remove_cloud(self, **kwargs)
 
         return
 
@@ -366,7 +371,7 @@ class Quads(object):
 
         kwargs = {'hostresource': hostresource, 'hostcloud': hostcloud, 'forceupdate': forceupdate}
 
-        get_hardware_service().update_host(self, **kwargs)
+        self.hardware_service.update_host(self, **kwargs)
 
         return
 
@@ -379,7 +384,7 @@ class Quads(object):
         kwargs = {'cloudresource': cloudresource, 'description': description, 'forceupdate': forceupdate,
                   'cloudowner': cloudowner, 'ccusers': ccusers, 'cloudticket': cloudticket, 'qinq': qinq}
 
-        get_hardware_service().update_cloud(self, **kwargs)
+        self.hardware_service.update_cloud(self, **kwargs)
 
         return
 
@@ -576,7 +581,7 @@ class Quads(object):
         kwargs = {'movecommand': movecommand, 'dryrun': dryrun, 'statedir': statedir,
                   'datearg': datearg}
 
-        get_hardware_service().move_hosts(self, **kwargs)
+        self.hardware_service.move_hosts(self, **kwargs)
 
         exit(0)
 
