@@ -669,3 +669,4 @@ class Quads(object):
         r = requests.request(method, url + request, data=json_data)
         if method == 'GET':
             return r
+
