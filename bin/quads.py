@@ -49,7 +49,6 @@ def main(argv):
     quads_config_file = os.path.join(os.path.dirname(__file__), "..", "conf", "quads.yml")
     quads_config = quads_load_config(quads_config_file)
 
-
     if "data_dir" not in quads_config:
         print "quads: Missing \"data_dir\" in " + quads_config_file
         exit(1)
@@ -80,11 +79,6 @@ def main(argv):
     defaultstatedir = os.path.join(quads_config["data_dir"], "state")
     defaultmovecommand = "/bin/echo"
 
-    # EC528 addition - sets hardware service
-    defaulthardwareservice = quads_config["hardware_service"]
-
-    # added for EC528 HIL-QUADS integration project - not a good place for this variable - should be moved eventually
-    hil_url = 'http://127.0.0.1:5000'
 
     parser = argparse.ArgumentParser(description='Query current cloud for a given host')
     parser.add_argument('--host', dest='host', type=str, default=None, help='Specify the host to query')
@@ -133,8 +127,6 @@ def main(argv):
     parser.add_argument('--hil-api-call', dest='hilapicall', type=str, default=None, help='HIL API Call');
     parser.add_argument('--set-hardware-service', dest='hardwareservice', type=str, default=defaulthardwareservice, help='Set Hardware Serve');
 
-    parser.add_argument('--hil-api-action', dest='hilapiaction', type=str, default=None, help='HIL API Action');
-    parser.add_argument('--hil-api-call', dest='hilapicall', type=str, default=None, help='HIL API Call');
 
     parser.add_argument('--set-hardware-service', dest='hardwareservice', type=str, default=defaulthardwareservice, help='Set Hardware Serve');
 
@@ -216,7 +208,6 @@ def main(argv):
 
     if args.lsclouds:
         quads.quads_list_clouds()
-        quads.quads_rest_call('GET', hil_url, '/projects')
         exit(0)
 
     if args.lsowner:
@@ -315,30 +306,6 @@ def main(argv):
         #     print "--move-hosts and --date are mutually exclusive unless using --dry-run."
         #     exit(1)
         quads.quads_move_hosts(args.movecommand, args.dryrun, args.statedir, args.datearg)
-        exit(0)
-
-    #added for EC528 HIL-QUADS Demo
-    #hardcoded to work on localhost port 5000, but can be reconfigured to work on another server
-    if args.hilapiaction is not None and args.hilapicall is not None:
-        quads.quads_rest_call(args.hilapiaction, hil_url, args.hilapicall)
-        '''
-        if args.hilapiaction == "GET":
-            r = requests.get(hil_url + args.hilapicall)
-            print r.text
-
-        if args.hilapiaction == 'POST':
-            #r = requests.post()
-            print "got a POST request!"
-
-        if args.hilapiaction == 'PUT':
-            r = requests.put(hil_url + args.hilapicall)
-            print r.text
-
-        if args.hilapiaction == 'DELETE':
-            #r = requests.delete()
-            print "got a DELETE request!"
-        '''
-
         exit(0)
 
     # finally, this part is just reporting ...
