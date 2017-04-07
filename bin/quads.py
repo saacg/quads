@@ -118,7 +118,6 @@ def main(argv):
     quads_config_file = os.path.dirname(__file__) + "/../conf/quads.yml"
     quads_config = quads_load_config(quads_config_file)
 
-
     if "data_dir" not in quads_config:
         print "quads: Missing \"data_dir\" in " + quads_config_file
         exit(1)
@@ -134,10 +133,6 @@ def main(argv):
     defaultconfig = quads_config["data_dir"] + "/schedule.yaml"
     defaultstatedir = quads_config["data_dir"] + "/state"
     defaultmovecommand = "/bin/echo"
-
-
-    # added for EC528 HIL-QUADS integration project - not a good place for this variable - should be moved eventually
-    hil_url = 'http://127.0.0.1:5000'
 
     parser = argparse.ArgumentParser(description='Query current cloud for a given host')
     group = parser.add_mutually_exclusive_group()
@@ -187,10 +182,6 @@ def main(argv):
     parser.add_argument('--os-control-scale', dest='controlscale',type=int,default=None, help='Number of controller nodes for OpenStack deployment')
     parser.add_argument('--os-compute-scale', dest='computescale',type=int,default=None, help='Number of compute nodes for OpenStack deployment')
     parser.add_argument('--host-type', dest='hosttype',type=str, default=None, help='Model/Make/Type of host DellR620  for example')
-
-    parser.add_argument('--hil-api-action', dest='hilapiaction', type=str, default=None, help='HIL API Action');
-    parser.add_argument('--hil-api-call', dest='hilapicall', type=str, default=None, help='HIL API Call');
-
 
     args = parser.parse_args()
     if args.logpath :
@@ -264,7 +255,6 @@ def main(argv):
     if args.lsclouds:
         print_clouds(quads)
         quads.quads_list_clouds()
-        #quads.quads_rest_call('GET', hil_url, '/projects')
         exit(0)
 
     if args.lsowner:
@@ -284,18 +274,10 @@ def main(argv):
         exit(0)
 
     if args.rmhost:
-        print "Detaching HIL node " + args.rmhost + " from project " + args.hostcloud
-        quads.quads_rest_call('POST', hil_url, '/project/' + args.hostcloud + '/detach_node', json.dumps({'node': args.rmhost}))     #EC528 addition)
-        print "removing QUADS host " + args.rmhost + " from " + args.hostcloud  + " in QUADS data"
         quads.quads_remove_host(args.rmhost)
         exit(0)
 
     if args.rmcloud:
-        print "Deleting network in HIL named " + args.rmcloud
-        quads.quads_rest_call('DELETE', hil_url, '/network/' + args.rmcloud)     #EC528 addition
-        print "Deleting project in HIL named " + args.rmcloud
-        quads.quads_rest_call('DELETE', hil_url, '/project/' + args.rmcloud)     #EC528 addition
-        print "Deleting " + args.rmcloud + " from QUADS data"
         quads.quads_remove_cloud(args.rmcloud)
         exit(0)
 
@@ -338,6 +320,7 @@ def main(argv):
         quads.quads_rest_call('PUT', hil_url, '/network/' + args.cloudresource, json.dumps({"owner": args.cloudresource, "access": args.cloudresource, "net_id": ""}))  #EC528 addition
         print "adding " + args.cloudresource + " to quads data"
         exit(0)
+
 
     if args.schedquery:
         schedule = None
@@ -430,6 +413,16 @@ def main(argv):
         exit(0)
 
     print_cloud_hosts(quads, args.datearg, args.cloudonly)
+
+        # if args.datearg is not None and not args.dryrun:
+        #     print "--move-hosts and --date are mutually exclusive unless using --dry-run."
+        #     exit(1)
+        quads.quads_move_hosts(args.movecommand, args.dryrun, args.statedir, args.datearg)
+        exit(0)
+
+    # finally, this part is just reporting ...
+    quads.quads_print_result(args.host, args.cloudonly, args.datearg, args.summary, args.fullsummary, args.lsschedule)
+
     exit(0)
 
 if __name__ == "__main__":
