@@ -11,11 +11,15 @@ import logging
 from subprocess import call
 from subprocess import check_call
 
+<<<<<<< HEAD
 #from bin 
+=======
+>>>>>>> skeleton of split design
 from hardware_services.network_service import NetworkService
 
 class MockNetworkDriver(NetworkService):
 
+<<<<<<< HEAD
     #def move_hosts(self, quadsinstance, **kwargs):
 	#for h in sorted(quadsinstance.quads.hosts.data.iterkeys()):	
 		#default_cloud, current_cloud, current_override = quadsinstance._quads_find_current(h, kwargs['datearg'])       
@@ -49,3 +53,12 @@ class MockNetworkDriver(NetworkService):
                     quadsinstance.logger.info("Moving " + h + " from " + current_state + " to " + current_cloud)
 	print "Moving "+ h+ " from " + default_cloud + " to " + current_cloud
         return
+=======
+    def move_hosts(self, quadsinstance, **kwargs):
+        print "moving hosts"
+        for key in kwargs:
+            print key, ": ", kwargs[key]
+
+
+
+>>>>>>> skeleton of split design

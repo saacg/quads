@@ -17,61 +17,25 @@ from hardware_services.inventory_service import InventoryService
 class QuadsNativeInventoryDriver(InventoryService):
 
     def update_cloud(self, quadsinstance, **kwargs):
-        description = kwargs['description']
-        cloudresource = kwargs['cloudresource']
-        forceupdate = kwargs['forceupdate']
-        cloudowner = kwargs['cloudowner']
-        cloudticket = kwargs['cloudticket']
-        qinq = kwargs['qinq']
-        ccusers = kwargs['ccusers']
-
-        if description is None:
+        if kwargs['description'] is None:
             quadsinstance.logger.error("--description is required when using --define-cloud")
             exit(1)
         else:
-            if cloudresource in quadsinstance.quads.clouds.data and not forceupdate:
-                quadsinstance.logger.error("Cloud \"%s\" already defined. Use --force to replace" % cloudresource)
+            if kwargs['cloudresource'] in quadsinstance.quads.clouds.data and not kwargs['forceupdate']:
+                quadsinstance.logger.error("Cloud \"%s\" already defined. Use --force to replace" % kwargs['cloudresource'])
                 exit(1)
-            if not cloudowner:
-                cloudowner = "nobody"
-            if not cloudticket:
-                cloudticket = "00000"
-            if not qinq:
-                qinq = "0"
-            if not ccusers:
+            if not kwargs['cloudowner']:
+                kwargs['cloudowner'] = "nobody"
+            if not kwargs['cloudticket']:
+                kwargs['cloudticket'] = "00000"
+            if not kwargs['qinq']:
+                kwargs['qinq'] = "0"
+            if not kwargs['ccusers']:
                 ccusers = []
             else:
                 ccusers = ccusers.split()
-            if cloudresource in quadsinstance.quads.clouds.data:
-                if 'ccusers' in quadsinstance.quads.clouds.data[cloudresource]:
-                    savecc = []
-                    for cc in quadsinstance.quads.clouds.data[cloudresource]['ccusers']:
-                        savecc.append(cc)
-                else:
-                    savecc = []
-                if 'description' in quadsinstance.quads.clouds.data[cloudresource]:
-                    save_description = quadsinstance.quads.clouds.data[cloudresource]['description']
-                else:
-                    save_description = ""
-                if 'owner' in quadsinstance.quads.clouds.data[cloudresource]:
-                    save_owner = quadsinstance.quads.clouds.data[cloudresource]['owner']
-                else:
-                    save_owner = "nobody"
-                if 'qinq' in quadsinstance.quads.clouds.data[cloudresource]:
-                    save_qinq = quadsinstance.quads.clouds.data[cloudresource]['qinq']
-                else:
-                    save_qinq = '0'
-                if 'ticket' in quadsinstance.quads.clouds.data[cloudresource]:
-                    save_ticket = quadsinstance.quads.clouds.data[cloudresource]['ticket']
-                else:
-                    save_ticket = '000000'
-                quadsinstance.quads.cloud_history.data[cloudresource][int(time.time())] = {'ccusers':savecc,
-                                                       'description':save_description,
-                                                       'owner':save_owner,
-                                                       'qinq':save_qinq,
-                                                       'ticket':save_ticket}
-
-            quadsinstance.quads.clouds.data[cloudresource] = { "description": description, "networks": {}, "owner": cloudowner, "ccusers": ccusers, "ticket": cloudticket, "qinq": qinq }
+            quadsinstance.quads.clouds.data[kwargs['cloudresource']] = { "description": kwargs['description'], "networks": {},
+                "owner": kwargs['cloudowner'], "ccusers": kwargs['ccusers'], "ticket": kwargs['cloudticket'], "qinq": kwargs['qinq']}
             quadsinstance.quads_write_data()
 
         return
@@ -142,23 +106,4 @@ class QuadsNativeInventoryDriver(InventoryService):
     def list_hosts(self,quadsinstance):
         quadsinstance.quads.hosts.host_list()
 
-    def load_data(self, quadsinstance, force):
-        if initialize:
-            quadsinstance.quads_init_data(force)
-        try:
-            stream = open(quadsinstance.config, 'r')
-            quadsinstance.data = yaml.load(stream)
-            stream.close()
-        except Exception, ex:
-            quadsinstance.logger.error(ex)
-            exit(1)
-
-    def write_data(self, quadsinstance, doexit = True):
-        quadsinstance.quads_write_data(doexit)
-
-    def sync_state(self, quadsinstance):
-        quadsinstance.quads_sync_state()
-
-    def init_data(self, quadsinstance, force):
-        quadsinstance.quads_init_data(force)
 
