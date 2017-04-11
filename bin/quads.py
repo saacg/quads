@@ -19,9 +19,6 @@ sys.path.append(os.path.dirname(__file__) + "/../")
 #from lib.hardware_services.hardware_service import set_hardware_service
 
 
-from lib.hardware_services.hardware_service import set_hardware_service
-
-
 logger = logging.getLogger('quads')
 ch = logging.StreamHandler(sys.stdout)
 ch.setLevel(logging.INFO)
