@@ -10,9 +10,12 @@ log: /opt/quads/log/quads.log
 
 # EC528 addition - demo 4
 # set hardware service (inventory and network services) - currently 3 options: Mock, Hil, and QuadsNative 
-#hardware_service: Hil 
+hardware_service: Hil 
 #hardware_service: QuadsNative 
-hardware_service: Mock 
+#hardware_service: Mock 
+
+# if Hil option is used, uncomment the following line to configure the HIL server url (default is set to localhost on port 5000)
+hil_url: http://127.0.0.1:5000
 
 
 # used for reporting
