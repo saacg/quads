@@ -24,8 +24,10 @@ class HilInventoryDriver(InventoryService):
 
 
     def update_cloud(self, quadsinstance, **kwargs):
-        quadsinstance.quads_rest_call('PUT', hil_url, '/project/' + kwargs['cloudresource'])
-        quadsinstance.quads_rest_call('PUT', hil_url, '/network/' + kwargs['cloudresource'], json.dumps({"owner": kwargs['cloudresource'], "access": kwargs['cloudresource'], "net_id": ""}))
+        #quadsinstance.quads_rest_call('PUT', hil_url, '/project/' + kwargs['cloudresource'])
+        #quadsinstance.quads_rest_call('PUT', hil_url, '/network/' + kwargs['cloudresource'], json.dumps({"owner": kwargs['cloudresource'], "access": kwargs['cloudresource'], "net_id": ""}))
+        self.__project_create(quadsinstance.hardware_service_url, kwargs['cloudresource'])
+        self.__project_create_network(quadsinstance.hardware_service_url, kwargs['cloudresource'])
 
 
     def update_host(self, quadsinstance, **kwargs):
@@ -54,8 +56,7 @@ class HilInventoryDriver(InventoryService):
     def list_clouds(self, quadsinstance):
         #projects = quadsinstance.quads_rest_call("GET", hil_url, '/projects')
         #print projects.text
-        url = self.__urlify(quadsinstance.hardware_service_url, 'projects')
-        print self.__get(url).text
+        print self.__list_projects(quadsinstance.hardware_service_url).text
 
 
     def list_hosts(self, quadsinstance):
@@ -84,8 +85,9 @@ class HilInventoryDriver(InventoryService):
     # the following private methods are based on the HIL cli and are wrappers for the hil rest api calls #
     ######################################################################################################
 
-    # strings together arguments in url format for rest call
     def __urlify(self, url, *args):
+        """ strings together arguments in url format for rest call """
+
         if url is None:
             sys.exit("Error: Hil server url not specified")
 
@@ -93,8 +95,11 @@ class HilInventoryDriver(InventoryService):
             url += '/' + urllib.quote(arg, '')
         return url
 
-
+    """ TODO move status check and rest call wrappers to libquads as static functions
+    """
     def __status_check(self, response):
+        """ checks status codes to ensure rest call returned successfully """
+
         if response.status_code < 200 or response.status_code >= 300:
             sys.exit(response.text)
         else:
@@ -105,7 +110,7 @@ class HilInventoryDriver(InventoryService):
         self.__status_check(requests.put(url, data=json.dumps(data)))
 
 
-    def __do_post(self, url, data={}):
+    def __post(self, url, data={}):
         self.__status_check(requests.post(url, data=json.dumps(data)))
 
 
@@ -115,6 +120,27 @@ class HilInventoryDriver(InventoryService):
 
     def __delete(self, url):
         self.__status_check(requests.delete(url))
+
+
+    def __list_projects(self, hil_url):
+        url = self.__urlify(hil_url, 'projects')
+        return self.__get(url)
+
+
+    def __project_create_network(self, hil_url, project):
+        """ creates network belonging to project of the same name """
+
+        url = self.__urlify(hil_url, 'network', project)
+        self.__put(url, data={'owner': project,
+                              'access': project,
+                              'net_id': ""})
+
+
+    def __project_create(self, hil_url, project):
+        """ creates new project """
+        url = self.__urlify(hil_url, 'project', project)
+        self.__put(url)
+
 
 
 
