@@ -33,6 +33,9 @@ from Clouds import Clouds
 from History import History
 from QuadsData import QuadsData
 from CloudHistory import CloudHistory
+import urllib
+import json
+from subprocess import check_call
 from hardware_services.inventory_service import get_inventory_service, set_inventory_service
 from hardware_services.network_service import get_network_service, set_network_service
 sys.path.append(os.path.dirname(__file__) + "/hardware_services/inventory_drivers/")
@@ -41,7 +44,7 @@ sys.path.append(os.path.dirname(__file__) + "/hardware_services/network_drivers/
 
 class Quads(object):
 
-    def __init__(self, config, statedir, movecommand, datearg, syncstate, initialize, force, hardwareservice):
+    def __init__(self, config, statedir, movecommand, datearg, syncstate, initialize, force, hardwareservice, hardwareserviceurl):
         """
         Initialize a quads object.
         """
@@ -64,6 +67,9 @@ class Quads(object):
 
         self.inventory_service = get_inventory_service()
         self.network_service = get_network_service()
+
+        self.hardware_service_url = hardwareserviceurl
+
 
         if initialize:
             self.quads_init_data(force)
@@ -745,3 +751,52 @@ class Quads(object):
         r = requests.request(method, url + request, data=json_data)
         if method == 'GET':
             return r
+
+    # the following class methods are added as utility functions for making calls to restful APIs,
+    # currently they are only used by the HIL drivers, but they are written generically so they can be
+    # reused if QUADS needs to interface with any other application in the future via http
+
+    @classmethod
+    def quads_urlify(self, url, *args):
+        """ strings together arguments in url format for rest call """
+
+        if url is None:
+            sys.exit("Error: server url not specified")
+
+        for arg in args:
+            url += '/' + urllib.quote(arg, '')
+        return url
+
+
+    @classmethod
+    def quads_status_code_check(self, response):
+        """ checks status codes to ensure rest call returned successfully """
+
+        if response.status_code < 200 or response.status_code >= 300:
+            sys.exit("Error: request returned: " + response.text)
+        else:
+            return response
+
+
+    @classmethod
+    def quads_put(self, url, data={}):
+        self.quads_status_code_check(requests.put(url, data=json.dumps(data)))
+
+
+    @classmethod
+    def quads_post(self, url, data={}):
+        self.quads_status_code_check(requests.post(url, data=json.dumps(data)))
+
+
+    @classmethod
+    def quads_get(self, url, params=None):
+        return self.quads_status_code_check(requests.get(url, params=params))
+
+
+    @classmethod
+    def quads_delete(self, url):
+        self.quads_status_code_check(requests.delete(url))
+
+
+
+
