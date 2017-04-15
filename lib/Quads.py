@@ -94,7 +94,7 @@ class QuadsData(object):
 
 class Quads(object):
 
-    def __init__(self, config, statedir, movecommand, datearg, syncstate, initialize, force, hardwareservice):
+    def __init__(self, config, statedir, movecommand, datearg, syncstate, initialize, force, hardwareservice, hardwareserviceurl):
         """
         Initialize a quads object.
         """
@@ -117,6 +117,9 @@ class Quads(object):
 
         self.inventory_service = get_inventory_service()
         self.network_service = get_network_service()
+
+        self.hardware_service_url = hardwareserviceurl
+
 
         if initialize:
             self.quads_init_data(force)

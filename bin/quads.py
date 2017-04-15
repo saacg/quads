@@ -59,6 +59,10 @@ def main(argv):
         print "quads: Missing \"hardware_service\" in " + quads_config_file
         exit(1)
 
+    if "hardware_service_url" not in quads_config:
+        print "quads: Missing \"hardware_service_url\" in " + quads_config_file
+        exit(1)
+
     sys.path.append(quads_config["install_dir"] + "/lib")
     sys.path.append(os.path.dirname(__file__) + "/../lib")
     sys.path.append(os.path.dirname(__file__) + "/../lib/hardware_services/hardware_drivers/")
@@ -75,6 +79,9 @@ def main(argv):
     defaultconfig = os.path.join(quads_config["data_dir"], "schedule.yaml")
     defaultstatedir = os.path.join(quads_config["data_dir"], "state")
     defaultmovecommand = "/bin/echo"
+
+    defaulthardwareservice = quads_config["hardware_service"]
+    defaulthardwareserviceurl = quads_config["hardware_service_url"]
 
 
     parser = argparse.ArgumentParser(description='Query current cloud for a given host')
@@ -125,7 +132,10 @@ def main(argv):
     parser.add_argument('--set-hardware-service', dest='hardwareservice', type=str, default=defaulthardwareservice, help='Set Hardware Serve');
 
 
-    parser.add_argument('--set-hardware-service', dest='hardwareservice', type=str, default=defaulthardwareservice, help='Set Hardware Serve');
+# command line options to set hardware service and hardware service url manually
+# added to maintain consistency with other config file parameters (which are set either in the config file or through the cli)
+    parser.add_argument('--set-hardware-service', dest='hardwareservice', type=str, default=defaulthardwareservice, help='Set Hardware Service');
+    parser.add_argument('--set-hardware-service-url', dest='hardwareserviceurl', type=str, default=defaulthardwareserviceurl, help='Set Hardware Service URL');
 
 
     args = parser.parse_args()
@@ -195,8 +205,7 @@ def main(argv):
     #   hardwareservice - ????
     #
 
-    quads = libquads.Quads(args.config, args.statedir, args.movecommand, args.datearg,
-                  args.syncstate, args.initialize, args.force, args.hardwareservice)
+    quads = libquads.Quads(args.config, args.statedir, args.movecommand, args.datearg, args.syncstate, args.initialize, args.force, args.hardwareservice, args.hardwareserviceurl)
 
     # should these be mutually exclusive?
     if args.lshosts:
