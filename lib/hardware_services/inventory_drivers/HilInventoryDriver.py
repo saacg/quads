@@ -61,4 +61,22 @@ class HilInventoryDriver(InventoryService):
         print hosts.text
 
 
+    def load_data(self, quads, force):
+        """
+        """
+
+    def init_data(self, quads, force):
+        """
+        """
+
+    def sync_state(self, quads):
+        """
+        """
+
+    def write_data(self, quads, doexit = True):
+        """
+        """
+
+
+
 
