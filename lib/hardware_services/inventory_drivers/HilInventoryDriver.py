@@ -11,6 +11,7 @@ import sys
 import requests
 import logging
 import json
+import urllib
 from subprocess import call
 from subprocess import check_call
 
@@ -51,8 +52,10 @@ class HilInventoryDriver(InventoryService):
 
 
     def list_clouds(self, quadsinstance):
-        projects = quadsinstance.quads_rest_call("GET", hil_url, '/projects')
-        print projects.text
+        #projects = quadsinstance.quads_rest_call("GET", hil_url, '/projects')
+        #print projects.text
+        url = self.__urlify(quadsinstance.hardware_service_url, 'projects')
+        print self.__get(url).text
 
 
     def list_hosts(self, quadsinstance):
@@ -77,6 +80,41 @@ class HilInventoryDriver(InventoryService):
         """
         """
 
+    ######################################################################################################
+    # the following private methods are based on the HIL cli and are wrappers for the hil rest api calls #
+    ######################################################################################################
+
+    # strings together arguments in url format for rest call
+    def __urlify(self, url, *args):
+        if url is None:
+            sys.exit("Error: Hil server url not specified")
+
+        for arg in args:
+            url += '/' + urllib.quote(arg, '')
+        return url
+
+
+    def __status_check(self, response):
+        if response.status_code < 200 or response.status_code >= 300:
+            sys.exit(response.text)
+        else:
+            return response
+
+
+    def __put(self, url, data={}):
+        self.__status_check(requests.put(url, data=json.dumps(data)))
+
+
+    def __do_post(self, url, data={}):
+        self.__status_check(requests.post(url, data=json.dumps(data)))
+
+
+    def __get(self, url, params=None):
+        return self.__status_check(requests.get(url, params=params))
+
+
+    def __delete(self, url):
+        self.__status_check(requests.delete(url))
 
 
 
