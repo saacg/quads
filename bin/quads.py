@@ -57,16 +57,24 @@ def main(argv):
         print "quads: Missing \"hardware_service\" in " + quads_config_file
         exit(1)
 
+    if "hardware_service_url" not in quads_config:
+        print "quads: Missing \"hardware_service_url\" in " + quads_config_file
+        exit(1)
+
     sys.path.append(os.path.join(quads_config["install_dir"], "lib"))
     sys.path.append(os.path.join(os.path.dirname(__file__), "..", "lib"))
     import Quads
+
+    sys.path.append(os.path.join(os.path.dirname(__file__), "..", "lib/hardware_services/hardware_drivers"))
+
 
     defaultconfig = os.path.join(quads_config["data_dir"], "schedule.yaml")
     defaultstatedir = os.path.join(quads_config["data_dir"], "state")
     defaultmovecommand = "/bin/echo"
 
-    # EC528 addition - sets hardware service
+    # EC528 addition - sets hardware service and hardware service url (if provided)
     defaulthardwareservice = quads_config["hardware_service"]
+    defaulthardwareserviceurl = quads_config["hardware_service_url"]
 
     # added for EC528 HIL-QUADS integration project - not a good place for this variable - should be moved eventually
     hil_url = 'http://127.0.0.1:5000'
@@ -114,9 +122,11 @@ def main(argv):
     parser.add_argument('--move-command', dest='movecommand', type=str, default=defaultmovecommand, help='External command to move a host')
     parser.add_argument('--dry-run', dest='dryrun', action='store_true', default=None, help='Dont update state when used with --move-hosts')
     parser.add_argument('--log-path', dest='logpath',type=str,default=None, help='Path to quads log file')
-    parser.add_argument('--hil-api-action', dest='hilapiaction', type=str, default=None, help='HIL API Action');
-    parser.add_argument('--hil-api-call', dest='hilapicall', type=str, default=None, help='HIL API Call');
-    parser.add_argument('--set-hardware-service', dest='hardwareservice', type=str, default=defaulthardwareservice, help='Set Hardware Serve');
+
+    # command line options to set hardware service and hardware service url manually
+    # added to maintain consistency with other config file parameters (which are set either in the config file or through the cli)
+    parser.add_argument('--set-hardware-service', dest='hardwareservice', type=str, default=defaulthardwareservice, help='Set Hardware Service');
+    parser.add_argument('--set-hardware-service-url', dest='hardwareserviceurl', type=str, default=defaulthardwareserviceurl, help='Set Hardware Service URL');
 
     args = parser.parse_args()
 
@@ -184,8 +194,8 @@ def main(argv):
     #
     #   hardwareservice - ????
     #
-    quads = Quads(args.config, args.statedir, args.movecommand, args.datearg,
-                  args.syncstate, args.initialize, args.force, args.hardwareservice)
+
+    quads = Quads.Quads(args.config, args.statedir, args.movecommand, args.datearg, args.syncstate, args.initialize, args.force, args.hardwareservice, args.hardwareserviceurl)
 
     # should these be mutually exclusive?
     if args.lshosts:
