@@ -27,8 +27,6 @@ class HilInventoryDriver(InventoryService):
 
 
     def update_cloud(self, quadsinstance, **kwargs):
-        #quadsinstance.quads_rest_call('PUT', hil_url, '/project/' + kwargs['cloudresource'])
-        #quadsinstance.quads_rest_call('PUT', hil_url, '/network/' + kwargs['cloudresource'], json.dumps({"owner": kwargs['cloudresource'], "access": kwargs['cloudresource'], "net_id": ""}))
         self.__project_create(quadsinstance.hardware_service_url, kwargs['cloudresource'])
         self.__project_create_network(quadsinstance.hardware_service_url, kwargs['cloudresource'])
 
@@ -43,9 +41,11 @@ class HilInventoryDriver(InventoryService):
 
 
     def remove_cloud(self, quadsinstance, **kwargs):
-        targetProject = kwargs['rmcloud']
-        quadsinstance.quads_rest_call("DELETE", hil_url, '/network/'+ targetProject)
-        quadsinstance.quads_rest_call("DELETE", hil_url, '/project/'+ targetProject)
+        cloud = kwargs['rmcloud']
+        #quadsinstance.quads_rest_call("DELETE", hil_url, '/network/'+ targetProject)
+        #quadsinstance.quads_rest_call("DELETE", hil_url, '/project/'+ targetProject)
+        self.__network_delete(quadsinstance.hardware_service_url, cloud)
+        self.__project_delete(quadsinstance.hardware_service_url, cloud)
 
 
     def remove_host(self,quadsinstance, **kwargs):
@@ -63,8 +63,9 @@ class HilInventoryDriver(InventoryService):
 
 
     def list_hosts(self, quadsinstance):
-        hosts = quadsinstance.quads_rest_call("GET", hil_url, '/nodes/all')
+        #hosts = quadsinstance.quads_rest_call("GET", hil_url, '/nodes/all')
         #hosts_yml = yaml.dump(json.loads(hosts.text), default_flow_style=False)
+        hosts = self.__list_nodes(quadsinstance.hardware_service_url)
         print hosts.text
 
 
@@ -101,11 +102,34 @@ class HilInventoryDriver(InventoryService):
                               'access': project,
                               'net_id': ""})
 
+    def __project_connect_node(self, hil_url, project, node):
+        url = Quads.quads_urlify(hil_url, 'project', project, 'connect_node')
+        Quads.quads_post(url, data={'node': node})
+
+
+    def __network_delete(self, hil_url, network):
+        url = Quads.quads_urlify(hil_url, 'network', network)
+        Quads.quads_delete(url)
+
 
     def __project_create(self, hil_url, project):
         """ creates new project """
         url = Quads.quads_urlify(hil_url, 'project', project)
         Quads.quads_put(url)
+
+
+    def __project_delete(self, hil_url, project):
+        url = Quads.quads_urlify(hil_url, 'project', project)
+        Quads.quads_delete(url)
+
+
+    def __list_nodes(self, hil_url, is_free='all'):
+        # if is_free is set to free, only lists unallocated nodes
+        if is_free not in ('all', 'free'):
+            sys.exit("error listing hosts. is_free is not set to all or free")
+        url = Quads.quads_urlify(hil_url, 'nodes', is_free)
+        return Quads.quads_get(url)
+
 
 
 
