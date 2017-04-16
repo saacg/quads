@@ -32,28 +32,35 @@ class HilInventoryDriver(InventoryService):
 
 
     def update_host(self, quadsinstance, **kwargs):
-        quadsinstance.quads_rest_call('POST', hil_url, '/project/' + kwargs['hostcloud'] + '/connect_node', json.dumps({'node': kwargs['hostresource']}))
-        node_info = quadsinstance.quads_rest_call('GET', hil_url, '/node/' + kwargs['hostresource'])
-        node = node_info.json()
-        for nic in node['nics']:        # a node in quads will only have one nic per network
-            quadsinstance.quads_rest_call('POST', hil_url, '/node/' + kwargs['hostresource'] + '/nic/' + nic['label'] + '/connect_network', json.dumps({'network': kwargs['hostcloud']}))
+        cloud = kwargs['hostcloud']
+        host = kwargs['hostresource']
+        hilurl = quadsinstance.hardware_service_url
+
+        self.__project_connect_node(hilurl, cloud, host)
+        node_info = self.__show_node(hilurl, host).json()
+        for nic in node_info['nics']:        # a node in quads will only have one nic per network
+            self.__node_connect_network(hilurl, host, nic['label'], cloud)
 
 
 
     def remove_cloud(self, quadsinstance, **kwargs):
         cloud = kwargs['rmcloud']
-        #quadsinstance.quads_rest_call("DELETE", hil_url, '/network/'+ targetProject)
-        #quadsinstance.quads_rest_call("DELETE", hil_url, '/project/'+ targetProject)
         self.__network_delete(quadsinstance.hardware_service_url, cloud)
         self.__project_delete(quadsinstance.hardware_service_url, cloud)
 
 
     def remove_host(self,quadsinstance, **kwargs):
+        host = kwargs['rmhost']
+        hilurl = quadsinstance.hardware_service_url
+
         # first detach host from network
-        node_info = quadsinstance.quads_rest_call('GET', hil_url, '/node/' + kwargs['rmhost'])
-        node = node_info.json()
-        for nic in node['nics']:        # a node in quads will only have one nic per network
-            quadsinstance.quads_rest_call('POST', hil_url, '/node/' + kwargs['rmhost'] + '/nic/' + nic['label'] + '/detach_network', json.dumps({'network': node['project']}))
+        node_info = self.__show_node(hilurl, host).json()
+        for nic in node_info['nics']:        # a node in quads will only have one nic per network
+            self.__node_detach_network(hilurl, host, nic['label'], node_info['project'])
+
+        # then detach host from project
+        self.__project_detach_node(hilurl, node_info['project'], host)
+
 
 
     def list_clouds(self, quadsinstance):
@@ -63,9 +70,8 @@ class HilInventoryDriver(InventoryService):
 
 
     def list_hosts(self, quadsinstance):
-        #hosts = quadsinstance.quads_rest_call("GET", hil_url, '/nodes/all')
-        #hosts_yml = yaml.dump(json.loads(hosts.text), default_flow_style=False)
         hosts = self.__list_nodes(quadsinstance.hardware_service_url)
+        #hosts_yml = yaml.dump(json.loads(hosts.text), default_flow_style=False)
         print hosts.text
 
 
@@ -102,9 +108,15 @@ class HilInventoryDriver(InventoryService):
                               'access': project,
                               'net_id': ""})
 
+
     def __project_connect_node(self, hil_url, project, node):
         url = Quads.quads_urlify(hil_url, 'project', project, 'connect_node')
         Quads.quads_post(url, data={'node': node})
+
+
+    def __project_detach_node(self, hil_url, project, node):
+        url = Quads.quads_urlify(hil_url, 'project', project, 'detach_node')
+        Quads.quads_post(url, data={'node': node })
 
 
     def __network_delete(self, hil_url, network):
@@ -129,6 +141,27 @@ class HilInventoryDriver(InventoryService):
             sys.exit("error listing hosts. is_free is not set to all or free")
         url = Quads.quads_urlify(hil_url, 'nodes', is_free)
         return Quads.quads_get(url)
+
+
+    def __show_node(self, hil_url, node):
+        url = Quads.quads_urlify(hil_url, 'node', node)
+        return Quads.quads_get(url)
+
+
+    def __node_connect_network(self, hil_url, node, nic, network, channel='null'):
+        url = Quads.quads_urlify(hil_url, 'node', node, 'nic', nic, 'connect_network')
+        Quads.quads_post(url, data={'network': network,
+                                    'channel': channel})
+
+
+    def __node_detach_network(self, hil_url, node, nic, network):
+        url = Quads.quads_urlify(hil_url, 'node', node, 'nic', nic, 'detach_network')
+        Quads.quads_post(url, data={'network': network})
+
+
+
+
+
 
 
 
