@@ -12,6 +12,7 @@ import requests
 import logging
 import json
 import urllib
+import time
 from subprocess import call
 from subprocess import check_call
 from os import path
@@ -57,6 +58,9 @@ class HilInventoryDriver(InventoryService):
         node_info = self.__show_node(hilurl, host).json()
         for nic in node_info['nics']:        # a node in quads will only have one nic per network
             self.__node_detach_network(hilurl, host, nic['label'], node_info['project'])
+
+        # Hil network server needs time to process request
+        time.sleep(2)
 
         # then detach host from project
         self.__project_detach_node(hilurl, node_info['project'], host)
@@ -148,10 +152,9 @@ class HilInventoryDriver(InventoryService):
         return Quads.quads_get(url)
 
 
-    def __node_connect_network(self, hil_url, node, nic, network, channel='null'):
+    def __node_connect_network(self, hil_url, node, nic, network, channel=None):
         url = Quads.quads_urlify(hil_url, 'node', node, 'nic', nic, 'connect_network')
-        Quads.quads_post(url, data={'network': network,
-                                    'channel': channel})
+        Quads.quads_post(url, data={'network': network })
 
 
     def __node_detach_network(self, hil_url, node, nic, network):
