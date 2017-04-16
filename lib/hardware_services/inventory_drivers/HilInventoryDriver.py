@@ -88,61 +88,24 @@ class HilInventoryDriver(InventoryService):
     # the following private methods are based on the HIL cli and are wrappers for the hil rest api calls #
     ######################################################################################################
 
-    def __urlify(self, url, *args):
-        """ strings together arguments in url format for rest call """
-
-        if url is None:
-            sys.exit("Error: Hil server url not specified")
-
-        for arg in args:
-            url += '/' + urllib.quote(arg, '')
-        return url
-
-    """ TODO move status check and rest call wrappers to libquads as static functions
-    """
-    def __status_check(self, response):
-        """ checks status codes to ensure rest call returned successfully """
-
-        if response.status_code < 200 or response.status_code >= 300:
-            sys.exit(response.text)
-        else:
-            return response
-
-
-    def __put(self, url, data={}):
-        self.__status_check(requests.put(url, data=json.dumps(data)))
-
-
-    def __post(self, url, data={}):
-        self.__status_check(requests.post(url, data=json.dumps(data)))
-
-
-    def __get(self, url, params=None):
-        return self.__status_check(requests.get(url, params=params))
-
-
-    def __delete(self, url):
-        self.__status_check(requests.delete(url))
-
-
     def __list_projects(self, hil_url):
-        url = self.__urlify(hil_url, 'projects')
-        return self.__get(url)
+        url = Quads.quads_urlify(hil_url, 'projects')
+        return Quads.quads_get(url)
 
 
     def __project_create_network(self, hil_url, project):
         """ creates network belonging to project of the same name """
 
-        url = self.__urlify(hil_url, 'network', project)
-        self.__put(url, data={'owner': project,
+        url = Quads.quads_urlify(hil_url, 'network', project)
+        Quads.quads_put(url, data={'owner': project,
                               'access': project,
                               'net_id': ""})
 
 
     def __project_create(self, hil_url, project):
         """ creates new project """
-        url = self.__urlify(hil_url, 'project', project)
-        self.__put(url)
+        url = Quads.quads_urlify(hil_url, 'project', project)
+        Quads.quads_put(url)
 
 
 

@@ -26,6 +26,8 @@ from History import History
 from QuadsData import QuadsData
 from CloudHistory import CloudHistory
 from subprocess import call
+import urllib
+import json
 from subprocess import check_call
 from hardware_services.inventory_service import get_inventory_service, set_inventory_service
 from hardware_services.network_service import get_network_service, set_network_service
@@ -701,22 +703,22 @@ class Quads(object):
 
     @classmethod
     def quads_put(self, url, data={}):
-        quads_status_check(requests.put(url, data=json.dumps(data)))
+        self.quads_status_code_check(requests.put(url, data=json.dumps(data)))
 
 
     @classmethod
     def quads_post(self, url, data={}):
-        quads_status_code_check(requests.post(url, data=json.dumps(data)))
+        self.quads_status_code_check(requests.post(url, data=json.dumps(data)))
 
 
     @classmethod
     def quads_get(self, url, params=None):
-        return quads_status_code_check(requests.get(url, params=params))
+        return self.quads_status_code_check(requests.get(url, params=params))
 
 
     @classmethod
     def quads_delete(self, url):
-        quads_status_code_check(requests.delete(url))
+        self.quads_status_code_check(requests.delete(url))
 
 
 
