@@ -21,8 +21,6 @@ from libquads import Quads
 
 from hardware_services.inventory_service import InventoryService
 
-# added for EC528 HIL-QUADS integration project
-hil_url = 'http://127.0.0.1:5000'
 
 class HilInventoryDriver(InventoryService):
 
@@ -59,8 +57,6 @@ class HilInventoryDriver(InventoryService):
         for nic in node_info['nics']:        # a node in quads will only have one nic per network
             self.__node_detach_network(hilurl, host, nic['label'], node_info['project'])
 
-        # Hil network server needs time to process request
-        time.sleep(2)
 
         # then detach host from project
         self.__project_detach_node(hilurl, node_info['project'], host)
@@ -100,6 +96,8 @@ class HilInventoryDriver(InventoryService):
     ######################################################################################################
 
     def __list_projects(self, hil_url):
+        """ lists all projects """
+
         url = Quads.quads_urlify(hil_url, 'projects')
         return Quads.quads_get(url)
 
@@ -114,16 +112,22 @@ class HilInventoryDriver(InventoryService):
 
 
     def __project_connect_node(self, hil_url, project, node):
+        """ connects node to project """
+
         url = Quads.quads_urlify(hil_url, 'project', project, 'connect_node')
         Quads.quads_post(url, data={'node': node})
 
 
     def __project_detach_node(self, hil_url, project, node):
+        """ Detaches node from project. Will fail if node is connected to any project networks """
+
         url = Quads.quads_urlify(hil_url, 'project', project, 'detach_node')
         Quads.quads_post(url, data={'node': node })
 
 
     def __network_delete(self, hil_url, network):
+        """ Deletes network. Will fail if network has nodes connected to it """
+
         url = Quads.quads_urlify(hil_url, 'network', network)
         Quads.quads_delete(url)
 
@@ -135,12 +139,14 @@ class HilInventoryDriver(InventoryService):
 
 
     def __project_delete(self, hil_url, project):
+        """ Deletes project. Will fail if project has any connected nodes or networks """
         url = Quads.quads_urlify(hil_url, 'project', project)
         Quads.quads_delete(url)
 
 
     def __list_nodes(self, hil_url, is_free='all'):
-        # if is_free is set to free, only lists unallocated nodes
+        """ lists nodes. If is_free is set to free, only lists unallocated nodes """
+
         if is_free not in ('all', 'free'):
             sys.exit("error listing hosts. is_free is not set to all or free")
         url = Quads.quads_urlify(hil_url, 'nodes', is_free)
@@ -148,18 +154,39 @@ class HilInventoryDriver(InventoryService):
 
 
     def __show_node(self, hil_url, node):
+        """ returns data associated with specified node """
+
         url = Quads.quads_urlify(hil_url, 'node', node)
         return Quads.quads_get(url)
 
 
     def __node_connect_network(self, hil_url, node, nic, network, channel=None):
+        """ connects specified node to specified network on the specified nic """
+
+        """ If channel is None, it is set automatically to the default value on the HIL server side, however is kept here as a
+        parameter in case it ever needs to be specified. """
+
+        if channel is not None:
+            network_data = { 'network': network,
+                             'channel': channel }
+        else:
+            network_data = { 'network': network }
+
         url = Quads.quads_urlify(hil_url, 'node', node, 'nic', nic, 'connect_network')
-        Quads.quads_post(url, data={'network': network })
+        Quads.quads_post(url, data=network_data)
+
+        # Hil network server needs time to process request
+        time.sleep(2)
 
 
     def __node_detach_network(self, hil_url, node, nic, network):
+        """ detaches node from network """
+
         url = Quads.quads_urlify(hil_url, 'node', node, 'nic', nic, 'detach_network')
         Quads.quads_post(url, data={'network': network})
+
+        # Hil network server needs time to process request
+        time.sleep(2)
 
 
 

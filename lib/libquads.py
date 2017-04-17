@@ -671,7 +671,7 @@ class Quads(object):
         """ strings together arguments in url format for rest call """
 
         if url is None:
-            sys.exit("Error: Hil server url not specified")
+            sys.exit("Error: server url not specified")
 
         for arg in args:
             url += '/' + urllib.quote(arg, '')
@@ -683,7 +683,7 @@ class Quads(object):
         """ checks status codes to ensure rest call returned successfully """
 
         if response.status_code < 200 or response.status_code >= 300:
-            sys.exit(response.text)
+            sys.exit("Error: request returned: " + response.text)
         else:
             return response
 
