@@ -10,6 +10,7 @@ import json
 import requests
 from subprocess import call
 from subprocess import check_call
+from Quads import Quads
 
 sys.path.append(os.path.dirname(__file__) + "/../")
 #from lib.hardware_services.hardware_service import set_hardware_service
@@ -120,6 +121,7 @@ def print_cloud_postconfig(quads, datearg, activesummary, postconfig):
 
 def main(argv):
     quads_config_file = os.path.dirname(__file__) + "/../conf/quads.yml"
+    quads_config_file = os.path.join(os.path.dirname(__file__), "..", "conf", "quads.yml")
     quads_config = quads_load_config(quads_config_file)
 
     if "data_dir" not in quads_config:
@@ -135,12 +137,12 @@ def main(argv):
         print "quads: Missing \"hardware_service\" in " + quads_config_file
         exit(1)
 
-    sys.path.append(quads_config["install_dir"] + "/lib")
-    sys.path.append(os.path.dirname(__file__) + "/../lib")
+    sys.path.append(os.path.join(quads_config["install_dir"], "lib"))
+    sys.path.append(os.path.join(os.path.dirname(__file__), "..", "lib"))
     import Quads
 
-    defaultconfig = quads_config["data_dir"] + "/schedule.yaml"
-    defaultstatedir = quads_config["data_dir"] + "/state"
+    defaultconfig = os.path.join(quads_config["data_dir"], "schedule.yaml")
+    defaultstatedir = os.path.join(quads_config["data_dir"], "state")
     defaultmovecommand = "/bin/echo"
 
     # EC528 addition - sets hardware service
@@ -266,9 +268,8 @@ def main(argv):
     #
     #   hardwareservice - ????
     #
-
     quads = Quads(args.config, args.statedir, args.movecommand, args.datearg,
-                  args.syncstate, args.initialize, args.force)
+                  args.syncstate, args.initialize, args.force, args.hardwareservice)
 
     if args.lshosts:
         print_hosts(quads)
@@ -448,4 +449,4 @@ def main(argv):
     exit(0)
 
 if __name__ == "__main__":
-       main(sys.argv[1:])
+    main(sys.argv[1:])
