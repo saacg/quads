@@ -10,7 +10,6 @@ import json
 import requests
 from subprocess import call
 from subprocess import check_call
-from Quads import Quads
 
 sys.path.append(os.path.dirname(__file__) + "/../")
 #from lib.hardware_services.hardware_service import set_hardware_service
@@ -120,7 +119,6 @@ def print_cloud_postconfig(quads, datearg, activesummary, postconfig):
         print cloud
 
 def main(argv):
-    quads_config_file = os.path.dirname(__file__) + "/../conf/quads.yml"
     quads_config_file = os.path.join(os.path.dirname(__file__), "..", "conf", "quads.yml")
     quads_config = quads_load_config(quads_config_file)
 
