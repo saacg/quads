@@ -193,5 +193,3 @@ class MockInventoryDriver(InventoryService):
         except Exception, ex:
             quadsinstance.logger.error("There was a problem with your file %s" % ex)
             exit(1)
-
-
