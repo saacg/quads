@@ -71,15 +71,7 @@ class Quads(object):
         self.hardware_service_url = hardwareserviceurl
 
 
-        if initialize:
-            self.quads_init_data(force)
-        try:
-            stream = open(config, 'r')
-            self.data = yaml.load(stream)
-            stream.close()
-        except Exception, ex:
-            self.logger.error(ex)
-            exit(1)
+        self.inventory_service.load_data(self, force, initialize)
 
         self.init_data(initialize, force)
         self.read_data()
@@ -169,46 +161,14 @@ class Quads(object):
         return
 
     # we occasionally need to write the data back out
-    def write_data(self):
-        if self.config_newer_than_data():
-            self.read_data()
-            return False
-        else:
-            try:
-                self.data = {"clouds":self.quads.clouds.data, "hosts":self.quads.hosts.data, "history":self.quads.history.data, "cloud_history":self.quads.cloud_history.data}
-                with open(self.config, 'w') as yaml_file:
-                    yaml_file.write(yaml.dump(self.data, default_flow_style=False))
-                self.read_data()
-                return True
-            except Exception, ex:
-                self.logger.error("There was a problem with your file %s" % ex)
-                return False
-
-    def config_newer_than_data(self):
-        if os.path.isfile(self.config):
-            if os.path.getmtime(self.config) > self.loadtime:
-                return True
-        return False
+    # we occasionally need to write the data back out
+    def quads_write_data(self, doexit = True):
+        self.inventory_service.write_data(self, doexit)
 
     # if passed --init, the config data is wiped.
     # typically we will not want to continue execution if user asks to initialize
-    def init_data(self, initialize=False, force=False):
-        if initialize:
-            if os.path.isfile(self.config):
-                if not force:
-                    self.logger.warn("Warning: " + self.config + " exists. Use --force to initialize.")
-                    return False
-            else:
-                try:
-                    stream = open(self.config, 'w')
-                    data = {"clouds":{}, "hosts":{}, "history":{}, "cloud_history":{}}
-                    stream.write( yaml.dump(data, default_flow_style=False))
-                    return True
-                except Exception, ex:
-                    self.logger.error("There was a problem with your file %s" % ex)
-                    return False
-        else:
-            return False
+    def quads_init_data(self, force):
+        self.inventory_service.init_data(self, force)
 
     # helper function called from other methods.  Never called from main()
     def find_current(self, host, datearg):
@@ -282,6 +242,7 @@ class Quads(object):
                 except Exception, ex:
                     self.logger.error("There was a problem with your file %s" % ex)
         return
+        self.inventory_service.sync_state(self)
 
     #return hosts
     def get_hosts(self):
