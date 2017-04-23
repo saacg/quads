@@ -161,7 +161,6 @@ class Quads(object):
         return
 
     # we occasionally need to write the data back out
-    # we occasionally need to write the data back out
     def quads_write_data(self, doexit = True):
         self.inventory_service.write_data(self, doexit)
 
@@ -229,19 +228,6 @@ class Quads(object):
     # sync the statedir db for hosts with schedule
     def sync_state(self):
         # sync state
-        if self.datearg is not None:
-            self.logger.error("--sync and --date are mutually exclusive.")
-            return False
-        for h in sorted(self.quads.hosts.data.iterkeys()):
-            default_cloud, current_cloud, current_override = self.find_current(h, self.datearg)
-            if not os.path.isfile(self.statedir + "/" + h):
-                try:
-                    stream = open(self.statedir + "/" + h, 'w')
-                    stream.write(current_cloud + '\n')
-                    stream.close()
-                except Exception, ex:
-                    self.logger.error("There was a problem with your file %s" % ex)
-        return
         self.inventory_service.sync_state(self)
 
     #return hosts
