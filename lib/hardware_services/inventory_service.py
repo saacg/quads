@@ -70,7 +70,7 @@ class InventoryService(object):
         """
 
     @abstractmethod
-    def load_data(self, quads, force):
+    def load_data(self, quads, force, initialize):
         """ TODO add documentation
         """
 
