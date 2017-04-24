@@ -85,7 +85,7 @@ class InventoryService(object):
         """
 
     @abstractmethod
-    def write_data(self, quads, doexit = True):
+    def write_data(self, quads, doexit):
         """ TODO add documentation
         """
 

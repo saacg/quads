@@ -71,15 +71,7 @@ class Quads(object):
         self.hardware_service_url = hardwareserviceurl
 
 
-        if initialize:
-            self.quads_init_data(force)
-        try:
-            stream = open(config, 'r')
-            self.data = yaml.load(stream)
-            stream.close()
-        except Exception, ex:
-            self.logger.error(ex)
-            exit(1)
+        self.inventory_service.load_data(self, force, initialize)
 
         self.init_data(initialize, force)
         self.read_data()
@@ -171,32 +163,12 @@ class Quads(object):
     # we occasionally need to write the data back out
     # we occasionally need to write the data back out
     def quads_write_data(self, doexit = True):
-        try:
-            stream = open(self.config, 'w')
-            self.data = {"clouds":self.quads.clouds.data, "hosts":self.quads.hosts.data, "history":self.quads.history.data, "cloud_history":self.quads.cloud_history.data}
-            stream.write( yaml.dump(self.data, default_flow_style=False))
-            if doexit:
-                exit(0)
-        except Exception, ex:
-            self.logger.error("There was a problem with your file %s" % ex)
-            if doexit:
-                exit(1)
+        self.inventory_service.write_data(self, doexit)
 
     # if passed --init, the config data is wiped.
     # typically we will not want to continue execution if user asks to initialize
     def quads_init_data(self, force):
-        if not force:
-            if os.path.isfile(self.config):
-                self.logger.warn("Warning: " + self.config + " exists. Use --force to initialize.")
-                exit(1)
-        try:
-            stream = open(self.config, 'w')
-            data = {"clouds":{}, "hosts":{}, "history":{}, "cloud_history":{}}
-            stream.write( yaml.dump(data, default_flow_style=False))
-            exit(0)
-        except Exception, ex:
-            self.logger.error("There was a problem with your file %s" % ex)
-            exit(1)
+        self.inventory_service.init_data(self, force)
 
     # helper function called from other methods.  Never called from main()
     def find_current(self, host, datearg):
