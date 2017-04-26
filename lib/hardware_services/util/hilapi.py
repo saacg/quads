@@ -3,6 +3,7 @@
 import requests
 import sys
 import yaml
+import os
 
 def error_check(response):
     if response.status_code < 200 or response.status_code >= 300:
@@ -12,14 +13,15 @@ def error_check(response):
     return response.json()
 
 def make_url(*args):
-    with open("hil.yml", 'r') as stream:
+    filename = os.path.join(os.path.dirname(__file__), "..", "..", "..", "conf", "quads.yml")
+    with open(filename, 'r') as stream:
         try:
             data = yaml.load(stream)
         except yaml.YAMLError:
-            sys.exit("Can't parse hil.yml file.")
-    url = data.get('url')
+            sys.exit("Can't parse quads.yml file.")
+    url = data.get('hardware_service_url')
     if url is None:
-        sys.exit("Hil url is not specified in hil.yml.")
+        sys.exit("Hil url is not specified in quads.yml.")
     for arg in args:
         url += '/' + arg
     return url
