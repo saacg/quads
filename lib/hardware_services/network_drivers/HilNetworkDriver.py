@@ -14,9 +14,8 @@ import json
 from subprocess import call
 from subprocess import check_call
 
-sys.path.append(os.path.join(os.path.dirname(__file__), "..", "util"))
-
-import hilapi
+from hardware_services.network_service import NetworkService
+from hardware_services.util import hilapi
 
 class HilNetworkDriver(NetworkService):
 
@@ -34,14 +33,10 @@ class HilNetworkDriver(NetworkService):
         
         pass
         
-    def __move_one_host(self, argv):
-        if len(argv) != 3:
-            sys.exit("Incorrect number of arguments. Should be host_to_move old_cloud new_cloud.")
-        host_to_move = argv[0]
-        old_cloud = argv[1]
-        new_cloud = argv[2]
+    def __move_one_host(self, host_to_move, old_cloud, new_cloud):
         node_nics = hilapi.show_node(host_to_move)['nics']
-        print("TESTING: Before move " + str(node_nics))
+        if _DEBUG > 0:
+            print("TESTING: Before move " + str(node_nics))
         for nic_json in node_nics:
             
             time.sleep(1)
@@ -58,7 +53,8 @@ class HilNetworkDriver(NetworkService):
             time.sleep(1)
 
         node_nics = hilapi.show_node(host_to_move)['nics']
-        print("TESTING: After move " + str(node_nics))    
+        if _DEBUG > 0:
+            print("TESTING: After move " + str(node_nics))    
     
 
     def move_hosts(self, quadsinstance, **kwargs):
@@ -74,8 +70,7 @@ class HilNetworkDriver(NetworkService):
                 quadsinstance.logger.info("Moving " + h + " from " + current_state + " to " + current_cloud)
                 if not kwargs['dryrun']:
                     try:
-                        args = [h, current_state, current_cloud]
-                        self.__move_one_host(args)
+                        self.__move_one_host(h, current_state, current_cloud)
                     except Exception, ex:
                         quadsinstance.logger.error("Move command failed: %s" % ex)
                         exit(1)

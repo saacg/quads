@@ -10,9 +10,6 @@ import requests
 import logging
 from subprocess import call
 from subprocess import check_call
-from os import path
-
-sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
 
 from hardware_services.network_service import NetworkService
 
