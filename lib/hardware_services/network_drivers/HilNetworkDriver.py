@@ -14,19 +14,69 @@ import json
 from subprocess import call
 from subprocess import check_call
 
-from hardware_services.network_service import NetworkService
+sys.path.append(os.path.join(os.path.dirname(__file__), "..", "util"))
 
-# added for EC528 HIL-QUADS integration project
-hil_url = 'http://127.0.0.1:5000'
+import hilapi
 
 class HilNetworkDriver(NetworkService):
 
+    def __read_current_state(self, argv):
+        """
+        Reads actual current network of a node from the HIL database and returns name of this network
+        """
+        
+        pass
+
+    def __write_current_state(self, argv):
+        """
+        Writes/updates information about a new network of a node to the HIL database
+        """
+        
+        pass
+        
+    def __move_one_host(self, argv):
+        if len(argv) != 3:
+            sys.exit("Incorrect number of arguments. Should be host_to_move old_cloud new_cloud.")
+        host_to_move = argv[0]
+        old_cloud = argv[1]
+        new_cloud = argv[2]
+        node_nics = hilapi.show_node(host_to_move)['nics']
+        print("TESTING: Before move " + str(node_nics))
+        for nic_json in node_nics:
+            
+            hilapi.node_detach_network(host_to_move,
+                                nic_json['label'],
+                                old_cloud)
+
+            hilapi.node_connect_network(host_to_move,
+                                nic_json['label'],
+                                new_cloud,
+                                'null')
+        node_nics = hilapi.show_node(host_to_move)['nics']
+        print("TESTING: After move " + str(node_nics))    
+    
 
     def move_hosts(self, quadsinstance, **kwargs):
-        targetProject = kwargs['movecommand']
-        current = kwargs['statedir']
-        quadsinstance.quads_rest_call("POST", hil_url, '/project/'+current+'/detach_node')
-        quadsinstance.quads_rest_call("POST", hil_url, '/project/'+targetProject+'/connect_node')
+        # move a host
+        for h in sorted(quadsinstance.quads.hosts.data.iterkeys()):
+            default_cloud, current_cloud, current_override = quadsinstance._quads_find_current(h, kwargs['datearg'])
+            # make sure data in the HIL database is up to date
+            quadsinstance.quads_sync_state()
+            # read data from the HIL database
+            current_state = self.__read_current_state(h)
+            
+            if current_state != current_cloud:
+                quadsinstance.logger.info("Moving " + h + " from " + current_state + " to " + current_cloud)
+                if not kwargs['dryrun']:
+                    try:
+                        args = [h, current_state, current_cloud]
+                        self.__move_one_host(args)
+                    except Exception, ex:
+                        quadsinstance.logger.error("Move command failed: %s" % ex)
+                        exit(1)
+                    # change network of the node to the correct one in the HIL database
+                    self.__write_current_state(h)
+        return
 
 
 
