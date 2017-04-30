@@ -692,57 +692,6 @@ class Quads(object):
         return result
                 print current_cloud
 
-    # add for EC528 HIL-QUADS integration project
-    def quads_rest_call(self, method, url, request, json_data=None):
-        r = requests.request(method, url + request, data=json_data)
-        if method == 'GET':
-            return r
-
-    # the following class methods are added as utility functions for making calls to restful APIs,
-    # currently they are only used by the HIL drivers, but they are written generically so they can be
-    # reused if QUADS needs to interface with any other application in the future via http
-
-    @classmethod
-    def quads_urlify(self, url, *args):
-        """ strings together arguments in url format for rest call """
-
-        if url is None:
-            sys.exit("Error: server url not specified")
-
-        for arg in args:
-            url += '/' + urllib.quote(arg, '')
-        return url
-
-
-    @classmethod
-    def quads_status_code_check(self, response):
-        """ checks status codes to ensure rest call returned successfully """
-
-        if response.status_code < 200 or response.status_code >= 300:
-            sys.exit("Error: request returned: " + response.text)
-        else:
-            return response
-
-
-    @classmethod
-    def quads_put(self, url, data={}):
-        self.quads_status_code_check(requests.put(url, data=json.dumps(data)))
-
-
-    @classmethod
-    def quads_post(self, url, data={}):
-        self.quads_status_code_check(requests.post(url, data=json.dumps(data)))
-
-
-    @classmethod
-    def quads_get(self, url, params=None):
-        return self.quads_status_code_check(requests.get(url, params=params))
-
-
-    @classmethod
-    def quads_delete(self, url):
-        self.quads_status_code_check(requests.delete(url))
-
 
 
 
