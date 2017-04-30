@@ -44,14 +44,19 @@ class HilNetworkDriver(NetworkService):
         print("TESTING: Before move " + str(node_nics))
         for nic_json in node_nics:
             
+            time.sleep(1)
             hilapi.node_detach_network(host_to_move,
                                 nic_json['label'],
                                 old_cloud)
+            time.sleep(1)
 
+            time.sleep(1)
             hilapi.node_connect_network(host_to_move,
                                 nic_json['label'],
                                 new_cloud,
                                 'null')
+            time.sleep(1)
+
         node_nics = hilapi.show_node(host_to_move)['nics']
         print("TESTING: After move " + str(node_nics))    
     
