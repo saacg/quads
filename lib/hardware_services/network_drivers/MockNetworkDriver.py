@@ -10,24 +10,13 @@ import requests
 import logging
 from subprocess import call
 from subprocess import check_call
+from os import path
 
-#from bin 
+sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
+
 from hardware_services.network_service import NetworkService
 
 class MockNetworkDriver(NetworkService):
-
-    #def move_hosts(self, quadsinstance, **kwargs):
-	#for h in sorted(quadsinstance.quads.hosts.data.iterkeys()):	
-		#default_cloud, current_cloud, current_override = quadsinstance._quads_find_current(h, kwargs['datearg'])       
-		#print h
-	#if (h == NULL):
-	#	print "no hosts"	
-	#print "moving hosts"
-        #for key in kwargs:
-            #print key, ": ", kwargs[key]
-	    #print kwargs[key]
-	#print "Moving hosts from" 
-
 
     def move_hosts(self, quadsinstance, **kwargs):
     	#move a host
